@@ -135,9 +135,9 @@ def save_str(s):
 
 def format_human(e, indent=""):
   value = e.text and e.text.strip()
-  if value and '\n' in value:
-    value = repr(value)
-  result = indent + e.tag + ":" + save_str(value)
+  result = indent + e.tag + ":"
+  if value:
+    result += ": " + save_str(value)
   for child in e:
     result += "\n" + format_human(child, indent+"  ")
   return result
@@ -169,7 +169,6 @@ def cmd_rec_unpub(api, args):
 
 def cmd_rec_del(api, args):
   print(format(api.deleteRecordings(recordID=args.id), args))
-
 
 def cmd_meet_list(api, args):
   for meeting in api.getMeetings():
