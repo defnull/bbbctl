@@ -44,8 +44,12 @@ class BBBApiClient:
   def getMeetingInfo(self, **query):
     return self.call('getMeetingInfo', **query)
 
-  def publishRecordings(self, **query):
-    return self.call('publishRecordings', **query)
+  def publishRecordings(self, recordID, publish):
+    return self.call('publishRecordings', recordID=recordID, publish=publish)
+
+  def deleteRecordings(self, recordID):
+    return self.call('deleteRecordings', recordID=recordID)
+
 
 def build_parser():
 
@@ -66,13 +70,21 @@ def build_parser():
   rec_list.add_argument('--meeting', help='Filter by external meetingID')
   rec_list.set_defaults(cmd=cmd_rec_list)
 
-  rec_show = rec_sub.add_parser('info', help='Show info about a single recording')
+  rec_show = rec_sub.add_parser('info', help='Show info about a recording')
   rec_show.add_argument('id', help='Recording ID')
   rec_show.set_defaults(cmd=cmd_rec_show)
+
+  rec_pub = rec_sub.add_parser('publish', help='Publish a recording')
+  rec_pub.add_argument('id', help='Recording ID')
+  rec_pub.set_defaults(cmd=cmd_rec_pub)
 
   rec_unpub = rec_sub.add_parser('unpublish', help='Unpublish a recording')
   rec_unpub.add_argument('id', help='Recording ID')
   rec_unpub.set_defaults(cmd=cmd_rec_unpub)
+
+  rec_del = rec_sub.add_parser('delete', help='Delete a recording')
+  rec_del.add_argument('id', help='Recording ID')
+  rec_del.set_defaults(cmd=cmd_rec_del)
 
   meet = main_sub.add_parser('meeting', help='List, inspect, end or change meetings')
   meet_sub = meet.add_subparsers()
@@ -149,8 +161,15 @@ def cmd_rec_list(api, args):
 def cmd_rec_show(api, args):
   print(format(api.getRecordings(recordID=args.id)[0], args))
 
+def cmd_rec_pub(api, args):
+  print(format(api.publishRecordings(recordID=args.id, publish="true"), args))
+
 def cmd_rec_unpub(api, args):
   print(format(api.publishRecordings(recordID=args.id, publish="false"), args))
+
+def cmd_rec_del(api, args):
+  print(format(api.deleteRecordings(recordID=args.id), args))
+
 
 def cmd_meet_list(api, args):
   for meeting in api.getMeetings():
