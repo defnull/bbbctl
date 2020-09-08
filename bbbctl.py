@@ -8,6 +8,7 @@ import sys, os
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import json
+import datetime
 
 class ApiError(RuntimeError):
   def __init__(self, tree):
@@ -143,8 +144,10 @@ def save_str(s):
 def format_human(e, indent=""):
   value = e.text and e.text.strip()
   result = indent + e.tag + ":"
+  if e.tag.lower() in ('starttime', 'endtime'):
+    value = '%s (%s)' % (datetime.datetime.utcfromtimestamp(float(value)/1000), value)
   if value:
-    result += ": " + save_str(value)
+    result += " " + save_str(value)
   for child in e:
     result += "\n" + format_human(child, indent+"  ")
   return result
