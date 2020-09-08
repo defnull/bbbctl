@@ -44,6 +44,9 @@ class BBBApiClient:
   def getMeetingInfo(self, **query):
     return self.call('getMeetingInfo', **query)
 
+  def end(self, **query):
+    return self.call('end', **query)
+
   def publishRecordings(self, recordID, publish):
     return self.call('publishRecordings', recordID=recordID, publish=publish)
 
@@ -95,6 +98,10 @@ def build_parser():
   meet_show = meet_sub.add_parser('info', help='Show meeting')
   meet_show.add_argument('id', help='Meeting ID')
   meet_show.set_defaults(cmd=cmd_meet_show)
+
+  meet_end = meet_sub.add_parser('end', help='End meeting')
+  meet_end.add_argument('id', help='Meeting ID')
+  meet_end.set_defaults(cmd=cmd_meet_end)
 
   return parser
 
@@ -176,6 +183,10 @@ def cmd_meet_list(api, args):
 
 def cmd_meet_show(api, args):
   print(format(api.getMeetingInfo(meetingID=args.id), args))
+
+def cmd_meet_end(api, args):
+  pwd = api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
+  api.end(meetingID=args.id, password=pwd)
 
 if __name__ == '__main__':
   main()
