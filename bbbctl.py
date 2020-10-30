@@ -94,6 +94,8 @@ def build_parser():
   meet_sub = meet.add_subparsers()
 
   meet_list = meet_sub.add_parser('list', help='List meetings')
+  meet_list.add_argument('--sort', help='Sort by a specific key')
+  meet_list.add_argument('--no-user', action="store_true", help='Do not show participatns')
   meet_list.set_defaults(cmd=cmd_meet_list)
 
   meet_show = meet_sub.add_parser('info', help='Show meeting')
@@ -180,8 +182,18 @@ def cmd_rec_unpub(api, args):
 def cmd_rec_del(api, args):
   print(format(api.deleteRecordings(recordID=args.id), args))
 
+def sortkey(elem, key):
+  v = elem.find(key)
+  return int(v.text.strip())
+
 def cmd_meet_list(api, args):
-  for meeting in api.getMeetings():
+  meetings = list(api.getMeetings())
+  if args.sort:
+    meetings = sorted(meetings, key=lambda m: sortkey(m, args.sort))
+  if args.no_user:
+    for m in meetings:
+      m.remove(m.find("attendees"))
+  for meeting in meetings:
     print(format(meeting, args))
 
 def cmd_meet_show(api, args):
