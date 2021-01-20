@@ -22,19 +22,25 @@ class BBBApiClient:
     self.api = api.rstrip('/')
     self.secret = secret
 
-  def call(self, command, **query):
+  def makeurl(self, command, **query):
     query = urllib.parse.urlencode(query)
     checksum = hashlib.sha1((command+query+self.secret).encode('utf8')).hexdigest()
     if query:
       query += "&"
     query += "checksum=" + checksum
-    url = '%s/%s?%s' % (self.api, command, query)
+    return '%s/%s?%s' % (self.api, command, query)
+
+  def call(self, command, **query):
+    url = self.makeurl(command, **query)
     with urllib.request.urlopen(url) as f:
       xml = f.read().decode('utf8')
     root = ET.fromstring(xml)
     if root.find('./returncode').text != "SUCCESS":
       raise ApiError(root)
     return root
+
+  def getJoinLink(self, **query):
+    return self.makeurl('join', **query)
 
   def getMeetings(self, **query):
     return self.call('getMeetings', **query).findall('./meetings/meeting')
@@ -98,9 +104,16 @@ def build_parser():
   meet_list.add_argument('--no-user', action="store_true", help='Do not show participatns')
   meet_list.set_defaults(cmd=cmd_meet_list)
 
-  meet_show = meet_sub.add_parser('info', help='Show meeting')
+  meet_show = meet_sub.add_parser('info', help='Show meeting details')
   meet_show.add_argument('id', help='Meeting ID')
   meet_show.set_defaults(cmd=cmd_meet_show)
+
+  meet_join = meet_sub.add_parser('join', help='Generate a join link for a meeting')
+  meet_join.add_argument('--mod', action="store_true", help='Join as moderator (default: attendee)')
+  meet_join.add_argument('--open', action="store_true", help='Open the link directly in a webbrowser (default: print it)')
+  meet_join.add_argument('id', help='Meeting ID')
+  meet_join.add_argument('name', help='Display name')
+  meet_join.set_defaults(cmd=cmd_meet_join)
 
   meet_end = meet_sub.add_parser('end', help='End meeting')
   meet_end.add_argument('id', help='Meeting ID')
@@ -198,6 +211,25 @@ def cmd_meet_list(api, args):
 
 def cmd_meet_show(api, args):
   print(format(api.getMeetingInfo(meetingID=args.id), args))
+
+def cmd_meet_join(api, args):
+  query = {
+    'meetingID': args.id,
+    'fullName': args.name
+  }
+
+  if args.mod:
+    query['password'] = api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
+  else:
+    query['password'] = api.getMeetingInfo(meetingID=args.id).find("attendeePW").text
+
+  link = api.getJoinLink(**query)
+
+  if args.open:
+    import webbrowser
+    webbrowser.open_new_tab(link)
+  else:
+    print(link)
 
 def cmd_meet_end(api, args):
   pwd = api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
