@@ -81,13 +81,7 @@ def build_parser():
         help='BBB API secret. Defaults to $BBBCTL_SECRET. Prefix with "@" to read secret from a file',
     )
 
-    grp = parser.add_mutually_exclusive_group()
-    grp.add_argument(
-        "--compact",
-        action="store_true",
-        help="Print result in compact form (one per line)",
-    )
-    grp.add_argument("--xml", action="store_true", help="Print result as xml")
+    parser.add_argument("--format", help="Change output format.", choices=['human', 'compact', 'xml'], default="human")
 
     rec = main_sub.add_parser(
         "record",
@@ -200,9 +194,9 @@ def main():
 
 
 def format(element, args):
-    if args.compact:
+    if args.format == "compact":
         return format_compact(element)
-    if args.xml:
+    if args.format == "xml":
         return format_xml(element)
     return format_human(element)
 
