@@ -75,15 +75,13 @@ def build_parser():
     parser = argparse.ArgumentParser()
     main_sub = parser.add_subparsers(title="Commands")
 
-    parser.add_argument("--server", help="BBB API URI. Defaults to $BBBCTL_SERVER")
     parser.add_argument(
-        "--local",
-        help="the BBB server ",
-        action="store_true",
+        "--server",
+        help="Server URL (default: BBBCTL_SERVER or local config)",
     )
     parser.add_argument(
         "--secret",
-        help="BBB API secret. Defaults to $BBBCTL_SECRET.",
+        help="API secretd (default: BBBCTL_SECRET or local config)",
     )
 
     parser.add_argument(
@@ -174,26 +172,25 @@ def error(text):
     sys.exit(1)
 
 
+config_paths = [
+    "/etc/bigbluebutton/bbb-web.properties",
+    "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
+    "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
+]
+
+
 def find_bbb_property(name):
-    locations = (
-        "/etc/bigbluebutton/bbb-web.properties",
-        "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
-        "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
-    )
-    for fname in locations:
+    for fname in config_paths:
         if not os.path.isfile(fname):
             continue
         if not os.access(fname, os.R_OK):
-            error("Found {!r} but missing read permissions".format(fname))
+            error("Permission denied. Unable to read: {!r}".format(fname))
         with open(fname, "r") as fp:
             for line in fp:
                 key, _, value = line.partition("=")
                 if _ and key.strip() == name:
                     return value.strip()
-        error("Unable to find {!r} in {}".format(name, fname))
-    error(
-        "Unable to find BBB config files at the usual locations: {}".format(locations)
-    )
+        error("Value for {!r} not found in {}".format(name, fname))
 
 
 def main():
@@ -202,26 +199,24 @@ def main():
     if not hasattr(args, "cmd"):
         parser.parse_args(sys.argv[1:] + ["-h"])
 
-    if args.local:
-        apiurl = args.server or find_bbb_property("bigbluebutton.web.serverURL")
-        secret = args.secret or find_bbb_property("securitySalt")
-    else:
-        apiurl = (
-            args.server
-            or os.environ.get("BBBCTL_SERVER")
-            or error("Missing --server parameter or BBBCTL_SERVER variables")
-        )
-        secret = (
-            args.secret
-            or os.environ.get("BBBCTL_SECRET")
-            or error("Missing --secret parameter or BBBCTL_SECRET variables")
-        )
+    server = (
+        args.server
+        or os.environ.get("BBBCTL_SERVER")
+        or find_bbb_property("bigbluebutton.web.serverURL")
+        or error("No server specified")
+    )
+    secret = (
+        args.secret
+        or os.environ.get("BBBCTL_SECRET")
+        or find_bbb_property("securitySalt")
+        or error("No secret specified")
+    )
 
-    apiurl = apiurl.rstrip("/")
-    if not apiurl.endswith("/bigbluebutton/api"):
-        apiurl += "/bigbluebutton/api"
+    server = server.rstrip("/")
+    if not server.endswith("/bigbluebutton/api"):
+        server += "/bigbluebutton/api"
 
-    client = BBBApiClient(apiurl, secret)
+    client = BBBApiClient(server, secret)
 
     try:
         args.cmd(client, args)

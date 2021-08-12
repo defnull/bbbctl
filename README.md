@@ -17,14 +17,15 @@ sudo chmos +x /usr/local/bin/bbbctl
 ## Usage
 
 ```sh
+# Only required for external BBB servers:
 export BBBCTL_SERVER="https://bbb.example.com/"
 export BBBCTL_SECRET="..."
+
 bbbctl meeting list    # Test your secret by listing current meetings
 bbbctl -h              # Print help for a list of commands
-
-# or, if run directly on a BBB server
-bbbctl --local meeting list
 ```
+
+If run directly on a BBB server with sufficient permissions, server URL and secret will be fetched from local BBB config files automatically.
 
 ## Command overview
 
