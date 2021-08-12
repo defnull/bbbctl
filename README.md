@@ -1,8 +1,8 @@
 # BigBlueButton REST API command-line client
 
-This is a small but useful command-line client for controlling meetings and recordings on a [BigBlueButton](https://docs.bigbluebutton.org/) server or cluster directly via the [REST API](https://docs.bigbluebutton.org/dev/api.html). It allows administrators to bypass front-end applications ([greenlight](https://github.com/bigbluebutton/greenlight), [moodle](https://moodle.com/certified-integrations/bigbluebutton/) or alternatives) and directly access the backing BBB servers for administative tasks, monitoring or testing.
+This is a small but useful command-line client for controlling meetings and recordings on a [BigBlueButton](https://docs.bigbluebutton.org/) server or cluster directly via the [REST API](https://docs.bigbluebutton.org/dev/api.html). It allows administrators to bypass front-end applications ([greenlight](https://github.com/bigbluebutton/greenlight), [moodle](https://moodle.com/certified-integrations/bigbluebutton/) or alternatives) and directly access the backing BBB servers for administrative tasks, monitoring or testing.
 
-The module can also be imported as a python library, but please note that this project is not yet considered stable in any way. A stable and more usable API for python skripting might follow.
+The module can also be imported as a python library, but please note that this project is not yet considered stable in any way. A stable and more usable API for python scripting might follow.
 
 ## Install
 
@@ -11,7 +11,7 @@ The module can also be imported as a python library, but please note that this p
 sudo pip install -U bbbctl
 # or manually:
 sudo curl -L https://raw.githubusercontent.com/defnull/bbbctl/master/src/bbbctl.py -o /usr/local/bin/bbbctl
-sudo chmos +x /usr/local/bin/bbbctl
+sudo chmod +x /usr/local/bin/bbbctl
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbc
   - `info <recordID>` Show info about a recording
   - `publish <recordID>` Publish an unpublished recording
   - `unpublish <recordID>` Unpublish (hide) recording)
-  - `delete <recordID>` Delete a recording
+  - `delete <recordID>` Delete a recording (be careful)
 
 ## Output format
 
