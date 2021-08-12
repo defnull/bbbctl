@@ -51,6 +51,9 @@ class BBBApiClient:
   def getMeetingInfo(self, **query):
     return self.call('getMeetingInfo', **query)
 
+  def createMeeting(self, **query):
+    return self.call('create', **query)
+
   def end(self, **query):
     return self.call('end', **query)
 
@@ -63,61 +66,74 @@ class BBBApiClient:
 
 def build_parser():
 
-  def add_format_args(p):
-    grp = p.add_mutually_exclusive_group()
-    grp.add_argument("--compact", action="store_true", help="Print result in compact form (one per line)")
-    #grp.add_argument("--json", action="store_true", help="Print result as json")
-    #grp.add_argument("--csv", help="Print named fields as CSV")
-
   parser = argparse.ArgumentParser()
   main_sub = parser.add_subparsers(title="Commands")
-  add_format_args(parser)
 
-  rec = main_sub.add_parser('record', help='List, show, publish, unpublish or delete recordings')
+  parser.add_argument('--server', help='BBB API URI. Defaults to $BBBCTL_SERVER')
+  parser.add_argument('--secret', help='BBB API secret. Defaults to $BBBCTL_SECRET. Prefix with "@" to read secret from a file')
+
+  grp = parser.add_mutually_exclusive_group()
+  grp.add_argument("--compact", action="store_true", help="Print result in compact form (one per line)")
+  grp.add_argument("--xml", action="store_true", help="Print result as xml")
+
+
+  rec = main_sub.add_parser('record', aliases=["r"], help='List, show, publish, unpublish or delete recordings')
   rec_sub = rec.add_subparsers(title="Commands")
 
-  rec_list = rec_sub.add_parser('list', help='List all recordings')
-  rec_list.add_argument('--meeting', help='Filter by external meetingID')
-  rec_list.set_defaults(cmd=cmd_rec_list)
+  cmd = rec_sub.add_parser('list', help='List all recordings')
+  cmd.add_argument('--meeting', help='Filter by external meetingID')
+  cmd.set_defaults(cmd=cmd_rec_list)
 
-  rec_show = rec_sub.add_parser('info', help='Show info about a recording')
-  rec_show.add_argument('id', help='Recording ID')
-  rec_show.set_defaults(cmd=cmd_rec_show)
+  cmd = rec_sub.add_parser('info', help='Show info about a recording')
+  cmd.add_argument('id', help='Recording ID')
+  cmd.set_defaults(cmd=cmd_rec_show)
 
-  rec_pub = rec_sub.add_parser('publish', help='Publish a recording')
-  rec_pub.add_argument('id', help='Recording ID')
-  rec_pub.set_defaults(cmd=cmd_rec_pub)
+  cmd = rec_sub.add_parser('publish', help='Publish a recording')
+  cmd.add_argument('id', help='Recording ID')
+  cmd.set_defaults(cmd=cmd_rec_pub)
 
-  rec_unpub = rec_sub.add_parser('unpublish', help='Unpublish a recording')
-  rec_unpub.add_argument('id', help='Recording ID')
-  rec_unpub.set_defaults(cmd=cmd_rec_unpub)
+  cmd = rec_sub.add_parser('unpublish', help='Unpublish a recording')
+  cmd.add_argument('id', help='Recording ID')
+  cmd.set_defaults(cmd=cmd_rec_unpub)
 
-  rec_del = rec_sub.add_parser('delete', help='Delete a recording')
-  rec_del.add_argument('id', help='Recording ID')
-  rec_del.set_defaults(cmd=cmd_rec_del)
+  cmd = rec_sub.add_parser('delete', help='Delete a recording')
+  cmd.add_argument('id', help='Recording ID')
+  cmd.set_defaults(cmd=cmd_rec_del)
 
-  meet = main_sub.add_parser('meeting', help='List, inspect, end or change meetings')
+
+  meet = main_sub.add_parser('meeting', aliases=["m"], help='List, inspect, create, join or end meetings')
   meet_sub = meet.add_subparsers()
 
-  meet_list = meet_sub.add_parser('list', help='List meetings')
-  meet_list.add_argument('--sort', help='Sort by a specific key')
-  meet_list.add_argument('--no-user', action="store_true", help='Do not show participatns')
-  meet_list.set_defaults(cmd=cmd_meet_list)
+  cmd = meet_sub.add_parser('list', help='List meetings')
+  cmd.add_argument('--sort', help='Sort by a specific key')
+  cmd.add_argument('--no-user', action="store_true", help='Do not show participatns')
+  cmd.set_defaults(cmd=cmd_meet_list)
 
-  meet_show = meet_sub.add_parser('info', help='Show meeting details')
-  meet_show.add_argument('id', help='Meeting ID')
-  meet_show.set_defaults(cmd=cmd_meet_show)
+  cmd = meet_sub.add_parser('info', help='Show meeting details')
+  cmd.add_argument('id', help='Meeting ID')
+  cmd.set_defaults(cmd=cmd_meet_show)
 
-  meet_join = meet_sub.add_parser('join', help='Generate a join link for a meeting')
-  meet_join.add_argument('--mod', action="store_true", help='Join as moderator (default: attendee)')
-  meet_join.add_argument('--open', action="store_true", help='Open the link directly in a webbrowser (default: print it)')
-  meet_join.add_argument('id', help='Meeting ID')
-  meet_join.add_argument('name', help='Display name')
-  meet_join.set_defaults(cmd=cmd_meet_join)
+  cmd = meet_sub.add_parser('create', help='Create meeting')
+  cmd.add_argument('id', help='Meeting ID')
+  cmd.add_argument('--name', help='Meeting name')
+  cmd.add_argument('--record', help='Allow recodring?', action="store_true")
+  cmd.add_argument('--mod', help='Directly create and print a join link for this username. Can be repeated.', action="append")
+  cmd.set_defaults(cmd=cmd_meet_create)
 
-  meet_end = meet_sub.add_parser('end', help='End meeting')
-  meet_end.add_argument('id', help='Meeting ID')
-  meet_end.set_defaults(cmd=cmd_meet_end)
+  cmd = meet_sub.add_parser('join', help='Generate a join link for a meeting')
+  cmd.add_argument('--mod', action="store_true", help='Join as moderator (default: attendee)')
+  cmd.add_argument('--open', action="store_true", help='Open the link directly in a webbrowser (default: print it)')
+  cmd.add_argument('id', help='Meeting ID')
+  cmd.add_argument('name', help='Display name')
+  cmd.set_defaults(cmd=cmd_meet_join)
+
+  cmd = meet_sub.add_parser('end', help='End meeting')
+  cmd.add_argument('id', help='Meeting ID')
+  cmd.set_defaults(cmd=cmd_meet_end)
+
+  cmd = meet_sub.add_parser('nuke', help='End ALL meeting')
+  cmd.add_argument('--doit', help='Really end all meetings?', action="store_true")
+  cmd.set_defaults(cmd=cmd_meet_nuke)
 
   return parser
 
@@ -132,12 +148,19 @@ def main():
     parser.parse_args(sys.argv[1:] + ["-h"])
 
   try:
-    apiurl = os.environ["BBBCTL_SERVER"].rstrip("/")
+    apiurl = (args.server or os.environ["BBBCTL_SERVER"]).rstrip("/")
     if not apiurl.endswith('/bigbluebutton/api'):
       apiurl += '/bigbluebutton/api'
-    secret = os.environ["BBBCTL_SECRET"]
   except KeyError:
-    error("Please set BBBCTL_SERVER and BBBCTL_SECRET environment variables.")
+    error("Missing --server parameter or BBBCTL_SERVER environment variables.")
+
+  try:
+    secret = (args.secret or os.environ["BBBCTL_SECRET"])
+    if secret.startswith('@') and os.path.isfile(secret[1:]):
+      with open(secret[1:], 'r') as fp:
+        secret = fp.readline().strip()
+  except KeyError:
+    error("Missing --secret parameter or BBBCTL_SECRET environment variables.")
 
   client = BBBApiClient(apiurl, secret)
 
@@ -149,9 +172,11 @@ def main():
 def format(element, args):
   if args.compact:
     return format_compact(element)
+  if args.xml:
+    return format_xml(element)
   return format_human(element)
 
-def save_str(s):
+def safe_str(s):
   if any(c in s for c in '\n ,"\'='):
     return json.dumps(s)
   return s
@@ -162,7 +187,7 @@ def format_human(e, indent=""):
   if e.tag.lower() in ('starttime', 'endtime'):
     value = '%s (%s)' % (datetime.datetime.utcfromtimestamp(float(value)/1000), value)
   if value:
-    result += " " + save_str(value)
+    result += " " + safe_str(value)
   for child in e:
     result += "\n" + format_human(child, indent+"  ")
   return result
@@ -171,10 +196,13 @@ def format_compact(e):
   tag = e.tag
   value = e.text and e.text.strip()
   if value:
-    tag += "=" + save_str(value)
+    tag += "=" + safe_str(value)
   if len(e):
     tag += "(" + ", ".join(format_compact(child) for child in e) + ")"
   return tag;
+
+def format_xml(e):
+  return ET.tostring(e, encoding="unicode")
 
 def cmd_rec_list(api, args):
   opts = {}
@@ -212,6 +240,22 @@ def cmd_meet_list(api, args):
 def cmd_meet_show(api, args):
   print(format(api.getMeetingInfo(meetingID=args.id), args))
 
+def cmd_meet_create(api, args):
+  print(format(api.createMeeting(
+    meetingID = args.id,
+    name = args.name or "Unnamed room",
+    record= args.record and 'true' or 'false'
+    ), args))
+
+  for name in args.mod or []:
+    query = {
+      'meetingID': args.id,
+      'fullName': name,
+      'password': api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
+    }
+    link = api.getJoinLink(**query)
+    print(name+":", link)
+
 def cmd_meet_join(api, args):
   query = {
     'meetingID': args.id,
@@ -234,6 +278,20 @@ def cmd_meet_join(api, args):
 def cmd_meet_end(api, args):
   pwd = api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
   api.end(meetingID=args.id, password=pwd)
+
+def cmd_meet_nuke(api, args):
+  meetings = list(api.getMeetings())
+  for meeting in meetings:
+    if args.doit:
+      api.end(
+        meetingID=meeting.find("meetingID").text,
+        password=meeting.find("moderatorPW").text)
+    print("{dryrun}id={id} user={users} name={name!r}".format(
+      dryrun="" if args.doit else "(dry run) ",
+      id=meeting.find("meetingID").text,
+      users=meeting.find("participantCount").text,
+      name=meeting.find("meetingName").text
+    ))
 
 if __name__ == '__main__':
   main()
