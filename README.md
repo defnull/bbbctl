@@ -21,25 +21,28 @@ export BBBCTL_SERVER="https://bbb.example.com/"
 export BBBCTL_SECRET="..."
 bbbctl meeting list    # Test your secret by listing current meetings
 bbbctl -h              # Print help for a list of commands
+
+# or, if run directly on a BBB server
+bbbctl --local meeting list
 ```
 
 ## Command overview
 
 You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbctl <command> -h`.
 
-* `meeting` Create, list, join, inspect or end meetings
-  * `list` List all meetings
-  * `info <meetingID>` Show info about a meeting
-  * `create <meetingID> <title>` Create a new meeting
-  * `join <meetingID> <displayName>` Generate join links
-  * `end <meetingID>` Forcefully end a meeting
-  * `nuke` Forcefully end ALL meetings (be careful)
-* `record` Work with recordings
-  * `list` List all recordings
-  * `info <recordID>` Show info about a recording
-  * `publish <recordID>` Publish an unpublished recording
-  * `unpublish <recordID>` Unpublish (hide) recording)
-  * `delete <recordID>` Delete a recording
+- `meeting` Create, list, join, inspect or end meetings
+  - `list` List all meetings
+  - `info <meetingID>` Show info about a meeting
+  - `create <meetingID> <title>` Create a new meeting
+  - `join <meetingID> <displayName>` Generate join links
+  - `end <meetingID>` Forcefully end a meeting
+  - `nuke` Forcefully end ALL meetings (be careful)
+- `record` Work with recordings
+  - `list` List all recordings
+  - `info <recordID>` Show info about a recording
+  - `publish <recordID>` Publish an unpublished recording
+  - `unpublish <recordID>` Unpublish (hide) recording)
+  - `delete <recordID>` Delete a recording
 
 ## Output format
 

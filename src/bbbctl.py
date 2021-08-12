@@ -77,8 +77,13 @@ def build_parser():
 
     parser.add_argument("--server", help="BBB API URI. Defaults to $BBBCTL_SERVER")
     parser.add_argument(
+        "--local",
+        help="the BBB server ",
+        action="store_true",
+    )
+    parser.add_argument(
         "--secret",
-        help='BBB API secret. Defaults to $BBBCTL_SECRET. Prefix with "@" to read secret from a file',
+        help="BBB API secret. Defaults to $BBBCTL_SECRET.",
     )
 
     parser.add_argument(
@@ -169,26 +174,52 @@ def error(text):
     sys.exit(1)
 
 
+def find_bbb_property(name):
+    locations = (
+        "/etc/bigbluebutton/bbb-web.properties",
+        "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
+        "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
+    )
+    for fname in locations:
+        if not os.path.isfile(fname):
+            continue
+        if not os.access(fname, os.R_OK):
+            error("Found {!r} but missing read permissions".format(fname))
+        with open(fname, "r") as fp:
+            for line in fp:
+                key, _, value = line.partition("=")
+                if _ and key.strip() == name:
+                    return value.strip()
+        error("Unable to find {!r} in {}".format(name, fname))
+    error(
+        "Unable to find BBB config files at the usual locations: {}".format(locations)
+    )
+
+
 def main():
     parser = build_parser()
     args = parser.parse_args()
     if not hasattr(args, "cmd"):
         parser.parse_args(sys.argv[1:] + ["-h"])
 
-    try:
-        apiurl = (args.server or os.environ["BBBCTL_SERVER"]).rstrip("/")
-        if not apiurl.endswith("/bigbluebutton/api"):
-            apiurl += "/bigbluebutton/api"
-    except KeyError:
-        error("Missing --server parameter or BBBCTL_SERVER environment variables.")
+    if args.local:
+        apiurl = args.server or find_bbb_property("bigbluebutton.web.serverURL")
+        secret = args.secret or find_bbb_property("securitySalt")
+    else:
+        apiurl = (
+            args.server
+            or os.environ.get("BBBCTL_SERVER")
+            or error("Missing --server parameter or BBBCTL_SERVER variables")
+        )
+        secret = (
+            args.secret
+            or os.environ.get("BBBCTL_SECRET")
+            or error("Missing --secret parameter or BBBCTL_SECRET variables")
+        )
 
-    try:
-        secret = args.secret or os.environ["BBBCTL_SECRET"]
-        if secret.startswith("@") and os.path.isfile(secret[1:]):
-            with open(secret[1:], "r") as fp:
-                secret = fp.readline().strip()
-    except KeyError:
-        error("Missing --secret parameter or BBBCTL_SECRET environment variables.")
+    apiurl = apiurl.rstrip("/")
+    if not apiurl.endswith("/bigbluebutton/api"):
+        apiurl += "/bigbluebutton/api"
 
     client = BBBApiClient(apiurl, secret)
 
