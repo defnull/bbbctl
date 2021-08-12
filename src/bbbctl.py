@@ -81,7 +81,12 @@ def build_parser():
         help='BBB API secret. Defaults to $BBBCTL_SECRET. Prefix with "@" to read secret from a file',
     )
 
-    parser.add_argument("--format", help="Change output format.", choices=['human', 'compact', 'xml'], default="human")
+    parser.add_argument(
+        "--format",
+        help="Change output format.",
+        choices=["human", "compact", "xml"],
+        default="human",
+    )
 
     rec = main_sub.add_parser(
         "record",
