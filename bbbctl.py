@@ -115,7 +115,7 @@ def build_parser():
 
   cmd = meet_sub.add_parser('create', help='Create meeting')
   cmd.add_argument('id', help='Meeting ID')
-  cmd.add_argument('--name', help='Meeting name')
+  cmd.add_argument('name', help='Meeting name')
   cmd.add_argument('--record', help='Allow recodring?', action="store_true")
   cmd.add_argument('--mod', help='Directly create and print a join link for this username. Can be repeated.', action="append")
   cmd.set_defaults(cmd=cmd_meet_create)
@@ -241,19 +241,21 @@ def cmd_meet_show(api, args):
   print(format(api.getMeetingInfo(meetingID=args.id), args))
 
 def cmd_meet_create(api, args):
-  print(format(api.createMeeting(
+  created = api.createMeeting(
     meetingID = args.id,
-    name = args.name or "Unnamed room",
-    record= args.record and 'true' or 'false'
-    ), args))
+    name = args.name,
+    record = args.record and 'true' or 'false'
+  )
+  print(format(created, args))
 
-  for name in args.mod or []:
-    query = {
-      'meetingID': args.id,
-      'fullName': name,
-      'password': api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
-    }
-    link = api.getJoinLink(**query)
+  if args.mod:
+    print()
+    for name in args.mod:
+      link = api.getJoinLink(
+        meetingID = args.id,
+        fullName = name,
+        password = created.find("moderatorPW").text
+      )
     print(name+":", link)
 
 def cmd_meet_join(api, args):
