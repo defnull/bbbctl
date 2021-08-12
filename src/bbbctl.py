@@ -93,7 +93,6 @@ def build_parser():
 
     rec = main_sub.add_parser(
         "record",
-        aliases=["r"],
         help="List, show, publish, unpublish or delete recordings",
     )
     rec_sub = rec.add_subparsers(title="Commands")
@@ -119,7 +118,7 @@ def build_parser():
     cmd.set_defaults(cmd=cmd_rec_del)
 
     meet = main_sub.add_parser(
-        "meeting", aliases=["m"], help="List, inspect, create, join or end meetings"
+        "meeting", help="List, inspect, create, join or end meetings"
     )
     meet_sub = meet.add_subparsers()
 
