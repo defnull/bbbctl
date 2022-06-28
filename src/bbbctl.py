@@ -357,22 +357,14 @@ def cmd_meet_create(api, args):
 
 
 def cmd_meet_join(api, args):
+    meeting = api.getMeetingInfo(meetingID=args.id)
     query = {"meetingID": args.id, "fullName": args.name}
-
-    if args.mod:
-        query["password"] = (
-            api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
-        )
-    else:
-        query["password"] = (
-            api.getMeetingInfo(meetingID=args.id).find("attendeePW").text
-        )
-
+    query["createTime"] = meeting.find("createTime").text
+    query["role"] = "MODERATOR" if args.mod else "VIEWER"
     link = api.getJoinLink(**query)
 
     if args.open:
         import webbrowser
-
         webbrowser.open_new_tab(link)
     else:
         print(link)
