@@ -212,6 +212,8 @@ def main():
     )
 
     server = server.rstrip("/")
+    if '://' not in server:
+        server = "https://" + server
     if not server.endswith("/bigbluebutton/api"):
         server += "/bigbluebutton/api"
 
