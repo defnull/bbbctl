@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import json
 import datetime
+import re
 
 __all__ = ["BBBApiClient", "ApiError"]
 
@@ -87,7 +88,7 @@ def build_parser():
     parser.add_argument(
         "--format",
         help="Change output format.",
-        choices=["human", "compact", "xml"],
+        choices=["human", "compact", "xml", "json", "jsonline"],
         default="human",
     )
 
@@ -230,6 +231,10 @@ def format(element, args):
         return format_compact(element)
     if args.format == "xml":
         return format_xml(element)
+    if args.format == "json":
+        return format_json(element, indent=2)
+    if args.format == "jsonline":
+        return format_json(element)
     return format_human(element)
 
 
@@ -266,6 +271,28 @@ def format_compact(e):
 
 def format_xml(e):
     return ET.tostring(e, encoding="unicode")
+
+
+def format_json(e, *a, **ka):
+    return json.dumps(_unpack_xml(e), *a, **ka)
+
+
+_should_be_list = ["attendees"]
+_should_be_number = ["createTime", "duration", "startTime", "endTime", "participantCount", "listenerCount", "voiceParticipantCount", "videoCount", "maxUsers", "moderatorCount"] 
+
+def _unpack_xml(e):
+    if e.tag in _should_be_list:
+        return [_unpack_xml(c) for c in e if e.tag]
+    if len(e):
+        return {c.tag: _unpack_xml(c) for c in e if c.tag}
+    value = e.text and e.text.strip()
+    if e.tag in _should_be_number:
+        return int(value)
+    if not value:
+        return None
+    if value in ('true', 'false'):
+        return value == 'true'
+    return value
 
 
 def cmd_rec_list(api, args):
