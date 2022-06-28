@@ -47,11 +47,11 @@ You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbc
 
 ## Output format
 
-The default output format is currently a human readable plain text format. You can switch to a more compact version with `--format=compact`. Other formats (e.g. `json`, `yaml` or `xml`) may be supported in the future.
+The default output format is a human readable plain text format. You can switch to a more compact version with `--format=compact`. Other formats that are better suited for scripted usage are also supported: `json`, `jsonline` or `xml`
 
 # License
 
-Copyright (c) 2020-2021, Marcel Hellkamp.
+Copyright (c) 2020-2022, Marcel Hellkamp.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
