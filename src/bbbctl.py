@@ -10,6 +10,7 @@ from xml.dom import minidom
 import json
 import datetime
 import re
+import ssl
 
 __all__ = ["BBBApiClient", "ApiError"]
 
@@ -23,9 +24,10 @@ class ApiError(RuntimeError):
 
 
 class BBBApiClient:
-    def __init__(self, api, secret):
+    def __init__(self, api, secret, ssl_context=None):
         self.api = api.rstrip("/")
         self.secret = secret
+        self.ssl = ssl_context or ssl.create_default_context()
 
     def makeurl(self, command, **query):
         query = urllib.parse.urlencode(query)
@@ -39,7 +41,7 @@ class BBBApiClient:
 
     def call(self, command, **query):
         url = self.makeurl(command, **query)
-        with urllib.request.urlopen(url) as f:
+        with urllib.request.urlopen(url, context=self.ssl) as f:
             xml = f.read().decode("utf8")
         root = ET.fromstring(xml)
         if root.find("./returncode").text != "SUCCESS":
@@ -83,6 +85,10 @@ def build_parser():
     parser.add_argument(
         "--secret",
         help="API secretd (default: BBBCTL_SECRET or local config)",
+    )
+    parser.add_argument(
+        "--insecure",
+        help="Skip TLS verification and accept self-signed or invalid SSL certificates as if they were valid",
     )
 
     parser.add_argument(
@@ -218,7 +224,12 @@ def main():
     if not server.endswith("/bigbluebutton/api"):
         server += "/bigbluebutton/api"
 
-    client = BBBApiClient(server, secret)
+    ctx = ssl.create_default_context()
+    if args.insecure:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+    client = BBBApiClient(server, secret, ssl_context=ctx)
 
     try:
         args.cmd(client, args)
