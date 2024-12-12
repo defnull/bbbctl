@@ -129,7 +129,7 @@ def build_parser():
 
     cmd = meet_sub.add_parser("list", help="List meetings")
     cmd.add_argument("--sort", help="Sort by a specific key")
-    cmd.add_argument("--no-user", action="store_true", help="Do not show participatns")
+    cmd.add_argument("--no-user", action="store_true", help="Do not show participants")
     cmd.set_defaults(cmd=cmd_meet_list)
 
     cmd = meet_sub.add_parser("info", help="Show meeting details")
@@ -139,10 +139,10 @@ def build_parser():
     cmd = meet_sub.add_parser("create", help="Create meeting")
     cmd.add_argument("id", help="Meeting ID")
     cmd.add_argument("name", help="Meeting name")
-    cmd.add_argument("--record", help="Allow recodring?", action="store_true")
+    cmd.add_argument("--record", help="Allow recording?", action="store_true")
     cmd.add_argument(
         "--mod",
-        help="Directly create and print a join link for this username. Can be repeated.",
+        help="Directly create and print a moderator join link for this username. Can be repeated.",
         action="append",
     )
     cmd.set_defaults(cmd=cmd_meet_create)
