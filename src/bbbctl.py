@@ -362,6 +362,7 @@ def cmd_meet_create(api, args):
             link = api.getJoinLink(
                 meetingID=args.id,
                 fullName=name,
+                createTime=created.find("createTime").text,
                 password=created.find("moderatorPW").text,
             )
         print(name + ":", link)
