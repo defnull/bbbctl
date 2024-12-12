@@ -260,7 +260,7 @@ def format_human(e, indent=""):
     result = indent + e.tag + ":"
     if e.tag.lower() in ("starttime", "endtime"):
         value = "%s (%s)" % (
-            datetime.datetime.utcfromtimestamp(float(value) / 1000),
+            datetime.datetime.fromtimestamp(float(value) / 1000, datetime.timezone.utc),
             value,
         )
     if value:
