@@ -374,7 +374,7 @@ def cmd_meet_create(api, args):
                 meetingID=args.id,
                 fullName=name,
                 createTime=created.find("createTime").text,
-                password=created.find("moderatorPW").text,
+                role="MODERATOR",
             )
         print(name + ":", link)
 
