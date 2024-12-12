@@ -165,7 +165,8 @@ def build_parser():
     cmd.set_defaults(cmd=cmd_meet_end)
 
     cmd = meet_sub.add_parser("nuke", help="End ALL meeting")
-    cmd.add_argument("--doit", help="Really end all meetings?", action="store_true")
+    cmd.add_argument("--doit", help="Disable dry-run mode and actually end meetings?", action="store_true")
+    cmd.add_argument("--ask", help="Ask for every meeting?", action="store_true")
     cmd.set_defaults(cmd=cmd_meet_nuke)
 
     return parser
@@ -402,11 +403,6 @@ def cmd_meet_end(api, args):
 def cmd_meet_nuke(api, args):
     meetings = list(api.getMeetings())
     for meeting in meetings:
-        if args.doit:
-            api.end(
-                meetingID=meeting.find("meetingID").text,
-                password=meeting.find("moderatorPW").text,
-            )
         print(
             "{dryrun}id={id} user={users} name={name!r}".format(
                 dryrun="" if args.doit else "(dry run) ",
@@ -415,6 +411,16 @@ def cmd_meet_nuke(api, args):
                 name=meeting.find("meetingName").text,
             )
         )
+        if args.doit:
+            if args.ask:
+                answer = input("End this meeting? [Yna] ").strip().lower()
+                if answer == "a":
+                    args.ask = False
+                elif answer in ("", "y"):
+                    pass
+                else:
+                    continue
+            api.end(meetingID=meeting.find("meetingID").text)
 
 
 if __name__ == "__main__":
