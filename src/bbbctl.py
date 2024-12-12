@@ -182,6 +182,7 @@ config_paths = [
     "/etc/bigbluebutton/bbb-web.properties",
     "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
     "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
+    "./bbbctl.conf",
 ]
 
 
