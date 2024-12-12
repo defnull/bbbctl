@@ -218,7 +218,7 @@ def main():
     )
 
     server = server.rstrip("/")
-    if '://' not in server:
+    if "://" not in server:
         server = "https://" + server
     if not server.endswith("/bigbluebutton/api"):
         server += "/bigbluebutton/api"
@@ -288,7 +288,19 @@ def format_json(e, *a, **ka):
 
 
 _should_be_list = ["attendees"]
-_should_be_number = ["createTime", "duration", "startTime", "endTime", "participantCount", "listenerCount", "voiceParticipantCount", "videoCount", "maxUsers", "moderatorCount"] 
+_should_be_number = [
+    "createTime",
+    "duration",
+    "startTime",
+    "endTime",
+    "participantCount",
+    "listenerCount",
+    "voiceParticipantCount",
+    "videoCount",
+    "maxUsers",
+    "moderatorCount",
+]
+
 
 def _unpack_xml(e):
     if e.tag in _should_be_list:
@@ -300,8 +312,8 @@ def _unpack_xml(e):
         return int(value)
     if not value:
         return None
-    if value in ('true', 'false'):
-        return value == 'true'
+    if value in ("true", "false"):
+        return value == "true"
     return value
 
 
@@ -376,6 +388,7 @@ def cmd_meet_join(api, args):
 
     if args.open:
         import webbrowser
+
         webbrowser.open_new_tab(link)
     else:
         print(link)
