@@ -6,10 +6,8 @@ import urllib.parse
 import hashlib
 import sys, os
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
 import json
 import datetime
-import re
 import ssl
 
 __all__ = ["BBBApiClient", "ApiError"]
