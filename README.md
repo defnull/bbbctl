@@ -37,6 +37,7 @@ You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbc
   - `create <meetingID> <title>` Create a new meeting
   - `join <meetingID> <displayName>` Generate join links
   - `end <meetingID>` Forcefully end a meeting
+  - `chat <meetingID> <message>` Send a chat message to a running meeting (BBB 3.0)
   - `nuke` Forcefully end ALL meetings (be careful)
 - `record` Work with recordings
   - `list` List all recordings
