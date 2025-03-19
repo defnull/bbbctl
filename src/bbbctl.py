@@ -28,7 +28,7 @@ class BBBApiClient:
         self.ssl = ssl_context or ssl.create_default_context()
 
     def makeurl(self, command, **query):
-        query = urllib.parse.urlencode(query)
+        query = urllib.parse.urlencode({k:v for k,v in query.items() if v is not None})
         checksum = hashlib.sha1(
             (command + query + self.secret).encode("utf8")
         ).hexdigest()
@@ -69,6 +69,9 @@ class BBBApiClient:
 
     def deleteRecordings(self, recordID):
         return self.call("deleteRecordings", recordID=recordID)
+
+    def sendChatMessage(self, meetingID, message, userName=None):
+        return self.call("sendChatMessage", meetingID=meetingID, message=message, userName=userName)
 
 
 def build_parser():
@@ -163,6 +166,12 @@ def build_parser():
     cmd = meet_sub.add_parser("end", help="End meeting")
     cmd.add_argument("id", help="Meeting ID")
     cmd.set_defaults(cmd=cmd_meet_end)
+
+    cmd = meet_sub.add_parser("chat", help="Send a chat message into a running meeting (BBB 3.0)")
+    cmd.add_argument("id", help="Meeting ID. Can be 'BROADCAST' do broadcase a message to all running meetings")
+    cmd.add_argument("message", help="The message to send to chat")
+    cmd.add_argument("--name", help="The name that will be shown as the sender of the chat message", default="SYSTEM")
+    cmd.set_defaults(cmd=cmd_meet_chat)
 
     cmd = meet_sub.add_parser("nuke", help="End ALL meeting")
     cmd.add_argument("--doit", help="Disable dry-run mode and actually end meetings?", action="store_true")
@@ -398,6 +407,16 @@ def cmd_meet_join(api, args):
 def cmd_meet_end(api, args):
     pwd = api.getMeetingInfo(meetingID=args.id).find("moderatorPW").text
     api.end(meetingID=args.id, password=pwd)
+
+
+def cmd_meet_chat(api, args):
+    if args.id == "BROADCAST":
+        meetings = [m.find("meetingID").text for m in api.getMeetings()]
+    else:
+        meetings = [args.id]
+
+    for meeting in meetings:
+        api.sendChatMessage(meeting, args.message, userName=args.name)
 
 
 def cmd_meet_nuke(api, args):
