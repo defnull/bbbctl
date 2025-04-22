@@ -386,7 +386,7 @@ def cmd_meet_create(api, args):
                 createTime=created.find("createTime").text,
                 role="MODERATOR",
             )
-        print(name + ":", link)
+            print(f"{name}: {link}")
 
 
 def cmd_meet_join(api, args):
