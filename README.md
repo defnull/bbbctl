@@ -8,10 +8,14 @@ The module can also be imported as a python library, but please note that this p
 
 ```sh
 # Install via pip
-sudo pip install -U bbbctl
+pip install -U bbbctl
+
 # or manually:
-sudo curl -L https://raw.githubusercontent.com/defnull/bbbctl/master/src/bbbctl.py -o /usr/local/bin/bbbctl
+curl -L https://raw.githubusercontent.com/defnull/bbbctl/master/src/bbbctl.py | sudo tee /usr/local/bin/bbbctl
 sudo chmod +x /usr/local/bin/bbbctl
+
+# or with uv/uvx
+uvx bbbctl
 ```
 
 ## Usage
