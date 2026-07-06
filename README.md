@@ -78,7 +78,7 @@ for meeting in client.getMeetings():
 
 # License
 
-Copyright (c) 2020-2062, Marcel Hellkamp.
+Copyright (c) 2020-2026, Marcel Hellkamp.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
