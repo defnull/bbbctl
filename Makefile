@@ -1,19 +1,13 @@
-.PHONY: venv clean build release format
+.PHONY: clean build release format
 
-venv: .venv/.installed
-.venv/.installed:
-	python3 -mvenv .venv
-	.venv/bin/pip install -U wheel pip build twine black
-	touch $@
+format:
+	uvx black src/
 
-format: venv
-	.venv/bin/python3 -m black src/
-
-build: venv
-	.venv/bin/python3 -m build
+build:
+	uv build
 
 release: clean build
-	.venv/bin/python3 -m twine upload dist/*
+	uv publish
 
 clean:
-	rm -rf .venv/ dist/ src/*.egg-info
+	rm -rf dist/ src/*.egg-info
