@@ -3,13 +3,9 @@
 This is a small but useful command-line client for controlling meetings and recordings on
 a [BigBlueButton](https://docs.bigbluebutton.org/) server or cluster directly via the
 [REST API](https://docs.bigbluebutton.org/dev/api.html). It allows administrators to bypass
-front-end applications ([greenlight](https://github.com/bigbluebutton/greenlight),
-[moodle](https://moodle.com/certified-integrations/bigbluebutton/) or alternatives) and
+front-end applications (e.g. [greenlight](https://github.com/bigbluebutton/greenlight) or
+[moodle](https://moodle.com/certified-integrations/bigbluebutton/)) and
 directly access the backing BBB servers for administrative tasks, monitoring or testing.
-
-The module can also be imported as a python library, but please note that this project is
-not yet considered stable in any way. A stable and more usable API for python scripting
-might follow.
 
 ## Install
 
@@ -37,7 +33,6 @@ export BBBCTL_SECRET="..."               # or --secret as a parameter
 
 # Check if your secret works:
 bbbctl meeting list
-
 ```
 
 ## Command overview
@@ -65,6 +60,21 @@ You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbc
 The default output format is a human readable plain text format. You can switch to a more 
 compact version with `--format=compact`. Other formats that are better suited for scripted
 usage are also supported: `json`, `jsonline` or `xml`
+
+## Use `BBBApiClient` from Python
+
+You can use the `BBBApiClient` class from Python, too. This thin wrapper around the
+BBB REST API can send signed API requests and return parsed XML `ElementTree`
+instances. Some convenience methods exist to get just the part of the XML you need.
+
+```python
+from bbbctl import BBBApiClient
+
+client = BBBApiClient(api="bbb.example.com", secret="***")
+
+for meeting in client.getMeetings():
+    print(meeting.findtext("./meetingID"), meeting.findtext("./meetingName"))
+```
 
 # License
 

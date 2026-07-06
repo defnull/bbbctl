@@ -336,6 +336,13 @@ class ApiError(RuntimeError):
 
 class BBBApiClient:
     def __init__(self, api, secret, ssl_context=None, debug=0):
+        # Add scheme if missing
+        if "://" not in api:
+            api = "https://" + api
+        # Add default API path, but only if there is no path yet
+        if api.count("/") == 2:
+            api += "/bigbluebutton/api"
+
         self.api = api.rstrip("/")
         self.secret = secret
         self.ssl = ssl_context or ssl.create_default_context()
@@ -367,7 +374,9 @@ class BBBApiClient:
             raise ApiError(root)
         return root
 
-    def getJoinLink(self, **query):
+    def getJoinLink(self, meetingID, fullName, **query):
+        query["meetingID"] = meetingID
+        query["fullName"] = fullName
         return self.makeurl("join", **query)
 
     def getMeetings(self, **query):
@@ -376,13 +385,17 @@ class BBBApiClient:
     def getRecordings(self, **query):
         return self.call("getRecordings", **query).findall("./recordings/recording")
 
-    def getMeetingInfo(self, **query):
+    def getMeetingInfo(self, meetingID, **query):
+        query["meetingID"] = meetingID
         return self.call("getMeetingInfo", **query)
 
-    def createMeeting(self, **query):
+    def createMeeting(self, meetingID, name, **query):
+        query["meetingID"] = meetingID
+        query["name"] = name
         return self.call("create", **query)
 
-    def end(self, **query):
+    def end(self, meetingID, **query):
+        query["meetingID"] = meetingID
         return self.call("end", **query)
 
     def publishRecordings(self, recordID, publish):
@@ -643,12 +656,6 @@ def main():
             "To access a remote server, use the --secret parameter or set the BBBCTL_SECRET environment variable."
         )
     )
-
-    server = server.rstrip("/")
-    if "://" not in server:
-        server = "https://" + server
-    if not server.endswith("/bigbluebutton/api"):
-        server += "/bigbluebutton/api"
 
     ctx = ssl.create_default_context()
     if args.insecure:
