@@ -357,7 +357,7 @@ class BBBApiClient:
         with urllib.request.urlopen(url, context=self.ssl) as f:
             xml = f.read().decode("utf8")
         root = ET.fromstring(xml)
-        if root.find("./returncode").text != "SUCCESS":
+        if (status := root.find("./returncode")) is None or status.text != "SUCCESS":
             raise ApiError(root)
         return root
 
