@@ -4,7 +4,8 @@ import argparse
 import urllib.request
 import urllib.parse
 import hashlib
-import sys, os
+import sys
+import os
 import xml.etree.ElementTree as ET
 import json
 import datetime
@@ -93,18 +94,20 @@ def build_parser():
         action="store_true",
     )
 
+
+    formats = ["human", "compact", "xml", "json", "jsonline"]
     parser.add_argument(
         "--format",
         help="Change output format.",
-        choices=["human", "compact", "xml", "json", "jsonline"],
-        default="human",
+        choices=formats,
+        default=formats[0],
     )
 
     rec = main_sub.add_parser(
         "record",
         help="List, show, publish, unpublish or delete recordings",
     )
-    rec_sub = rec.add_subparsers(title="Commands")
+    rec_sub = rec.add_subparsers(title="Manage recordings")
 
     cmd = rec_sub.add_parser("list", help="List all recordings")
     cmd.add_argument("--meeting", help="Filter by external meetingID")
