@@ -346,7 +346,7 @@ class BBBApiClient:
         self.api = api.rstrip("/")
         self.secret = secret
         self.ssl = ssl_context or ssl.create_default_context()
-        self.debug = max(0, debug)
+        self.debug = max(0, debug or 0)
 
     def makeurl(self, command, **query):
         query = urllib.parse.urlencode(
