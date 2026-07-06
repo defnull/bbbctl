@@ -319,8 +319,8 @@ CREATE_LOCKS = {
     "cam": "lockSettingsDisableCam",
     "mic": "lockSettingsDisableMic",
     "chat": "lockSettingsDisablePublicChat",
-    "pm": "lockSettingDisablePrivateChat",
-    "notes": "lockSettingDisableNotes",
+    "pm": "lockSettingsDisablePrivateChat",
+    "notes": "lockSettingsDisableNotes",
     "userlist": "lockSettingsHideUserList",
     "cursor": "lockSettingsHideViewersCursor",
 }
@@ -367,10 +367,11 @@ class BBBApiClient:
         with urllib.request.urlopen(url, context=self.ssl) as f:
             xml = f.read().decode("utf8")
         if self.debug >= 2:
-            for line in xml:
+            for line in xml.splitlines():
                 print(f"<<< {line}", file=sys.stderr)
         root = ET.fromstring(xml)
-        if (status := root.find("./returncode")) is None or status.text != "SUCCESS":
+        status = root.find("./returncode")
+        if status is None or status.text != "SUCCESS":
             raise ApiError(root)
         return root
 
@@ -799,8 +800,8 @@ def cmd_meet_create(api, args):
     params = {"meetingID": args.id, "name": args.name}
 
     # Process --lock first so it can be overridden by explicit --no-lockSettingsBlaBla
-    for k, v in CREATE_LOCKS:
-        if k in args.lock:
+    for k, v in CREATE_LOCKS.items():
+        if k in (args.lock or []):
             params[v] = "true"
 
     # Apply all CREATE_PARAMS
@@ -814,23 +815,23 @@ def cmd_meet_create(api, args):
         params[name] = str(value)
 
     # Apply --meta key=value
-    for k, v in args.meta:
+    for k, v in args.meta or []:
         if v:
             params[f"meta_{k}"] = str(v)
 
     # Apply --disable feature,feature
     disabled = set()
     enabled = set()
-    for feature in args.disable or []:
+    for feature in args.disabledFeatures or []:
         if feature in CREATE_FEATURES:
             disabled.add(feature)
-    for feature in args.enabled or []:
+    for feature in args.disabledFeaturesExclude or []:
         if feature in CREATE_FEATURES:
             enabled.add(feature)
-            disabled.remove(feature)
+            disabled.discard(feature)
     if disabled:
         params["disabledFeatures"] = ",".join(sorted(disabled))
-    if disabled:
+    if enabled:
         params["disabledFeaturesExclude"] = ",".join(sorted(enabled))
 
     created = api.createMeeting(**params)
