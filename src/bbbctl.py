@@ -910,7 +910,10 @@ def cmd_meet_nuke(api, args):
                     pass
                 else:
                     continue
-            api.end(meetingID=meeting.find("meetingID").text)
+            api.end(
+                meetingID=meeting.find("meetingID").text,
+                password=meeting.find("moderatorPW").text,
+            )
 
 
 def cmd_sign(api, args):
