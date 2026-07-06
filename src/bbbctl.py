@@ -434,7 +434,7 @@ def build_parser():
         return (k, v)
 
     parser = argparse.ArgumentParser()
-    main_sub = parser.add_subparsers(title="Commands")
+    main_sub = parser.add_subparsers(title="Commands", required=True)
 
     parser.add_argument(
         "--server",
@@ -468,7 +468,7 @@ def build_parser():
         "record",
         help="List, show, publish, unpublish or delete recordings",
     )
-    rec_sub = rec.add_subparsers(title="Manage recordings")
+    rec_sub = rec.add_subparsers(title="Manage recordings", required=True)
 
     cmd = rec_sub.add_parser("list", help="List all recordings")
     cmd.add_argument("--meeting", help="Filter by external meetingID")
@@ -493,7 +493,7 @@ def build_parser():
     meet = main_sub.add_parser(
         "meeting", help="List, inspect, create, join or end meetings"
     )
-    meet_sub = meet.add_subparsers()
+    meet_sub = meet.add_subparsers(required=True)
 
     cmd = meet_sub.add_parser("list", help="List meetings")
     cmd.add_argument("--sort", help="Sort by a specific key")
@@ -644,8 +644,6 @@ def find_bbb_property(name):
 def main():
     parser = build_parser()
     args = parser.parse_args()
-    if not hasattr(args, "cmd"):
-        parser.parse_args(sys.argv[1:] + ["-h"])
 
     server = (
         args.server
