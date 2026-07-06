@@ -89,7 +89,8 @@ def build_parser():
     )
     parser.add_argument(
         "--insecure",
-        help="Skip TLS verification and accept self-signed or invalid SSL certificates as if they were valid",
+        help="Skip TLS verification and accept self-signed or expired SSL certificates",
+        action="store_true",
     )
 
     parser.add_argument(
