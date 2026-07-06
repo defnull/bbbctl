@@ -1,35 +1,44 @@
 # BigBlueButton REST API command-line client
 
-This is a small but useful command-line client for controlling meetings and recordings on a [BigBlueButton](https://docs.bigbluebutton.org/) server or cluster directly via the [REST API](https://docs.bigbluebutton.org/dev/api.html). It allows administrators to bypass front-end applications ([greenlight](https://github.com/bigbluebutton/greenlight), [moodle](https://moodle.com/certified-integrations/bigbluebutton/) or alternatives) and directly access the backing BBB servers for administrative tasks, monitoring or testing.
+This is a small but useful command-line client for controlling meetings and recordings on
+a [BigBlueButton](https://docs.bigbluebutton.org/) server or cluster directly via the
+[REST API](https://docs.bigbluebutton.org/dev/api.html). It allows administrators to bypass
+front-end applications ([greenlight](https://github.com/bigbluebutton/greenlight),
+[moodle](https://moodle.com/certified-integrations/bigbluebutton/) or alternatives) and
+directly access the backing BBB servers for administrative tasks, monitoring or testing.
 
-The module can also be imported as a python library, but please note that this project is not yet considered stable in any way. A stable and more usable API for python scripting might follow.
+The module can also be imported as a python library, but please note that this project is
+not yet considered stable in any way. A stable and more usable API for python scripting
+might follow.
 
 ## Install
 
+You can install bbbctl the usual way with `pip install bbbctl` into a virtual environment.
+Sine bbbctl has no dependencies, you can also **manually** install it by downloading the
+python script and placing it into a bin folder:
+
 ```sh
-# Install via pip
-pip install -U bbbctl
-
-# or manually:
-curl -L https://raw.githubusercontent.com/defnull/bbbctl/master/src/bbbctl.py | sudo tee /usr/local/bin/bbbctl
-sudo chmod +x /usr/local/bin/bbbctl
-
-# or with uv/uvx
-uvx bbbctl
+curl -L --create-dirs -o ~/.local/bin/bbbctl https://raw.githubusercontent.com/defnull/bbbctl/master/src/bbbctl.py 
+chmod +x ~/.local/bin/bbbctl
 ```
+
+**Tip:** If you have [uv/uvx](https://docs.astral.sh/uv/) installed, you can use this tool
+directly via `uvx bbbctl ...`.
 
 ## Usage
 
+If run directly on a BBB server with sufficient permissions, server URL and secret will
+be fetched from local BBB config files automatically.
+
 ```sh
 # Only required for external BBB servers:
-export BBBCTL_SERVER="https://bbb.example.com/"
-export BBBCTL_SECRET="..."
+export BBBCTL_SERVER="bbb.example.com"   # or --server as a parameter
+export BBBCTL_SECRET="..."               # or --secret as a parameter
 
-bbbctl meeting list    # Test your secret by listing current meetings
-bbbctl -h              # Print help for a list of commands
+# Check if your secret works:
+bbbctl meeting list
+
 ```
-
-If run directly on a BBB server with sufficient permissions, server URL and secret will be fetched from local BBB config files automatically.
 
 ## Command overview
 
@@ -47,16 +56,19 @@ You can get detailed help and a list of all parameters with `bbbctl -h` or `bbbc
   - `list` List all recordings
   - `info <recordID>` Show info about a recording
   - `publish <recordID>` Publish an unpublished recording
-  - `unpublish <recordID>` Unpublish (hide) recording)
+  - `unpublish <recordID>` Unpublish (hide) recording
   - `delete <recordID>` Delete a recording (be careful)
+- `sign <action> <param*>` Print a signed API URL
 
 ## Output format
 
-The default output format is a human readable plain text format. You can switch to a more compact version with `--format=compact`. Other formats that are better suited for scripted usage are also supported: `json`, `jsonline` or `xml`
+The default output format is a human readable plain text format. You can switch to a more 
+compact version with `--format=compact`. Other formats that are better suited for scripted
+usage are also supported: `json`, `jsonline` or `xml`
 
 # License
 
-Copyright (c) 2020-2022, Marcel Hellkamp.
+Copyright (c) 2020-2062, Marcel Hellkamp.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
