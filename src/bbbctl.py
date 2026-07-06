@@ -550,6 +550,15 @@ def build_parser():
     cmd.add_argument("--ask", help="Ask for every meeting?", action="store_true")
     cmd.set_defaults(cmd=cmd_meet_nuke)
 
+    sign = main_sub.add_parser(
+        "sign",
+        help="Sign URLs with a secret",
+    )
+
+    sign.add_argument("action")
+    sign.add_argument("parameters", nargs="*", help="Any number of KEY=VALUE parameters.")
+    sign.set_defaults(cmd=cmd_sign)
+
     return parser
 
 
@@ -846,6 +855,18 @@ def cmd_meet_nuke(api, args):
                 else:
                     continue
             api.end(meetingID=meeting.find("meetingID").text)
+
+
+def cmd_sign(api, args):
+    action = args.action
+    query = {}
+    for param in args.parameters:
+        name, sep, value = param.partition("=")
+        if sep:
+            query[name] = value
+        else:
+            query[name] = ""
+    print(api.makeurl(action, **query))
 
 
 if __name__ == "__main__":
