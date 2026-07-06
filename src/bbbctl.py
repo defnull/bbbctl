@@ -335,10 +335,11 @@ class ApiError(RuntimeError):
 
 
 class BBBApiClient:
-    def __init__(self, api, secret, ssl_context=None):
+    def __init__(self, api, secret, ssl_context=None, debug=0):
         self.api = api.rstrip("/")
         self.secret = secret
         self.ssl = ssl_context or ssl.create_default_context()
+        self.debug = max(0, debug)
 
     def makeurl(self, command, **query):
         query = urllib.parse.urlencode(
@@ -354,8 +355,13 @@ class BBBApiClient:
 
     def call(self, command, **query):
         url = self.makeurl(command, **query)
+        if self.debug:
+            print(f">>> {url}", file=sys.stderr)
         with urllib.request.urlopen(url, context=self.ssl) as f:
             xml = f.read().decode("utf8")
+        if self.debug >= 2:
+            for line in xml:
+                print(f"<<< {line}", file=sys.stderr)
         root = ET.fromstring(xml)
         if (status := root.find("./returncode")) is None or status.text != "SUCCESS":
             raise ApiError(root)
@@ -417,6 +423,12 @@ def build_parser():
         "--insecure",
         help="Skip TLS verification and accept self-signed or expired SSL certificates",
         action="store_true",
+    )
+    parser.add_argument(
+        "-v",
+        "--debug",
+        help="Print alls API calls. Repeat to also print all API responses.",
+        action="count",
     )
 
     formats = ["human", "compact", "xml", "json", "jsonline"]
@@ -643,7 +655,7 @@ def main():
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
 
-    client = BBBApiClient(server, secret, ssl_context=ctx)
+    client = BBBApiClient(server, secret, ssl_context=ctx, debug=args.debug)
 
     try:
         args.cmd(client, args)
