@@ -842,6 +842,10 @@ def cmd_meet_create(api, args):
     if enabled:
         params["disabledFeaturesExclude"] = ",".join(sorted(enabled))
 
+    # Apply raw key=value parameters last so they can override shortcuts.
+    for k, v in args.params:
+        params[k] = str(v)
+
     created = api.createMeeting(**params)
 
     if args.join:
