@@ -13,6 +13,12 @@ import ssl
 
 __all__ = ["BBBApiClient", "ApiError"]
 
+CONFIG_PATHS = [
+    "/etc/bigbluebutton/bbb-web.properties",
+    "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
+    "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
+    "./bbbctl.conf",
+]
 
 CREATE_PARAMS = {
     #'name': (str, 'A name for the meeting. Added in 2.4: This parameter is now required.'),
@@ -409,7 +415,6 @@ def build_parser():
         action="store_true",
     )
 
-
     formats = ["human", "compact", "xml", "json", "jsonline"]
     parser.add_argument(
         "--format",
@@ -578,26 +583,22 @@ def error(text):
     sys.exit(1)
 
 
-config_paths = [
-    "/etc/bigbluebutton/bbb-web.properties",
-    "/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties",
-    "/var/lib/tomcat7/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties",
-    "./bbbctl.conf",
-]
+def warn(text):
+    print(text, file=sys.stderr)
 
 
 def find_bbb_property(name):
-    for fname in config_paths:
+    for fname in CONFIG_PATHS:
         if not os.path.isfile(fname):
             continue
         if not os.access(fname, os.R_OK):
-            error("Permission denied. Unable to read: {!r}".format(fname))
+            warn(f"BBB config file found but not read-able: {fname}")
+            continue
         with open(fname, "r") as fp:
             for line in fp:
                 key, _, value = line.partition("=")
                 if _ and key.strip() == name:
                     return value.strip()
-        error("Value for {!r} not found in {}".format(name, fname))
 
 
 def main():
@@ -610,13 +611,19 @@ def main():
         args.server
         or os.environ.get("BBBCTL_SERVER")
         or find_bbb_property("bigbluebutton.web.serverURL")
-        or error("No server specified")
+        or error(
+            "Unable to find 'bigbluebutton.web.serverURL' in local BBB config files.\n"
+            "To access a remote server, use the --server parameter or set the BBBCTL_SERVER environment variable."
+        )
     )
     secret = (
         args.secret
         or os.environ.get("BBBCTL_SECRET")
         or find_bbb_property("securitySalt")
-        or error("No secret specified")
+        or error(
+            "Unable to find 'securitySalt' in local BBB config files.\n"
+            "To access a remote server, use the --secret parameter or set the BBBCTL_SECRET environment variable."
+        )
     )
 
     server = server.rstrip("/")
