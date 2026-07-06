@@ -523,6 +523,8 @@ def build_parser():
     cmd.set_defaults(cmd=cmd_meet_create)
 
     cmd = meet_sub.add_parser("join", help="Generate a join link for a meeting")
+    cmd.add_argument("id", help="Meeting ID")
+    cmd.add_argument("name", help="Display name")
     cmd.add_argument(
         "--mod", action="store_true", help="Join as moderator (default: attendee)"
     )
@@ -531,23 +533,32 @@ def build_parser():
         action="store_true",
         help="Open the link directly in a webbrowser (default: print it)",
     )
-    cmd.add_argument("id", help="Meeting ID")
-    cmd.add_argument("name", help="Display name")
     cmd.set_defaults(cmd=cmd_meet_join)
+
+    cmd = meet_sub.add_parser(
+        "chat", help="Send chat messages to running meetings (BBB >=3.0)"
+    )
+    cmd.add_argument(
+        "id",
+        help="Meeting ID, or 'BROADCAST' to sent a message to all running meetings",
+    )
+    cmd.add_argument("message", help="The chat message to send")
+    cmd.add_argument(
+        "--name", help="Username shown as the message author", default="SYSTEM"
+    )
+    cmd.set_defaults(cmd=cmd_meet_chat)
 
     cmd = meet_sub.add_parser("end", help="End meeting")
     cmd.add_argument("id", help="Meeting ID")
     cmd.set_defaults(cmd=cmd_meet_end)
 
-    cmd = meet_sub.add_parser("chat", help="Send a chat message into a running meeting (BBB 3.0)")
-    cmd.add_argument("id", help="Meeting ID. Can be 'BROADCAST' do broadcase a message to all running meetings")
-    cmd.add_argument("message", help="The message to send to chat")
-    cmd.add_argument("--name", help="The name that will be shown as the sender of the chat message", default="SYSTEM")
-    cmd.set_defaults(cmd=cmd_meet_chat)
-
     cmd = meet_sub.add_parser("nuke", help="End ALL meeting")
-    cmd.add_argument("--doit", help="Disable dry-run mode and actually end meetings?", action="store_true")
-    cmd.add_argument("--ask", help="Ask for every meeting?", action="store_true")
+    cmd.add_argument(
+        "--doit",
+        help="Disable dry-run mode and actually end meetings.",
+        action="store_true",
+    )
+    cmd.add_argument("--ask", help="Ask for every meeting", action="store_true")
     cmd.set_defaults(cmd=cmd_meet_nuke)
 
     sign = main_sub.add_parser(
