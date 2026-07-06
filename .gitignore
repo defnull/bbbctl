@@ -2,3 +2,4 @@ dist
 src/*.egg-info
 .venv
 .vscode
+__pycache__
