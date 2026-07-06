@@ -9,7 +9,7 @@ name = "bbbctl"
 version = "0.4.3"
 description = "BigBlueButton API command-line client"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "Marcel Hellkamp", email = "marc@gsites.de" },

@@ -370,8 +370,7 @@ class BBBApiClient:
             for line in xml.splitlines():
                 print(f"<<< {line}", file=sys.stderr)
         root = ET.fromstring(xml)
-        status = root.find("./returncode")
-        if status is None or status.text != "SUCCESS":
+        if (status := root.find("./returncode")) is None or status.text != "SUCCESS":
             raise ApiError(root)
         return root
 
@@ -413,8 +412,20 @@ class BBBApiClient:
 
 def build_parser():
 
-    def csv_type(value):
-        return value.split(",")
+    def csv_choice(choices):
+        choices = set(choices)
+
+        def parse(value):
+            items = [item.strip() for item in value.split(",") if item.strip()]
+            unknown = [item for item in items if item not in choices]
+            if unknown:
+                raise argparse.ArgumentTypeError(
+                    "invalid choice: %s (choose from %s)"
+                    % (", ".join(unknown), ", ".join(sorted(choices)))
+                )
+            return items
+
+        return parse
 
     def kv_type(value):
         k, _, v = value.partition("=")
@@ -514,8 +525,7 @@ def build_parser():
     cmd.add_argument(
         "--lock",
         help="Shortcuts for --lockSettingsDisable... parameters.",
-        choices=list(CREATE_LOCKS.keys()),
-        type=csv_type,
+        type=csv_choice(CREATE_LOCKS.keys()),
     )
 
     cmd.add_argument(
@@ -529,15 +539,13 @@ def build_parser():
     cmd.add_argument(
         "--disabledFeatures",
         help="Disable features for this meeting. Set multiple values as comma-separated list.",
-        choices=CREATE_FEATURES,
-        type=csv_type,
+        type=csv_choice(CREATE_FEATURES),
     )
 
     cmd.add_argument(
         "--disabledFeaturesExclude",
         help="Remove featres from the --disabledFeatures list. Set multiple values as comma-separated list.",
-        choices=CREATE_FEATURES,
-        type=csv_type,
+        type=csv_choice(CREATE_FEATURES),
     )
 
     for name, (type_, help) in CREATE_PARAMS.items():
