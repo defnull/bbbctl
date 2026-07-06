@@ -341,7 +341,9 @@ class BBBApiClient:
         self.ssl = ssl_context or ssl.create_default_context()
 
     def makeurl(self, command, **query):
-        query = urllib.parse.urlencode({k:v for k,v in query.items() if v is not None})
+        query = urllib.parse.urlencode(
+            {k: v for k, v in query.items() if v is not None}
+        )
         checksum = hashlib.sha1(
             (command + query + self.secret).encode("utf8")
         ).hexdigest()
@@ -384,7 +386,9 @@ class BBBApiClient:
         return self.call("deleteRecordings", recordID=recordID)
 
     def sendChatMessage(self, meetingID, message, userName=None):
-        return self.call("sendChatMessage", meetingID=meetingID, message=message, userName=userName)
+        return self.call(
+            "sendChatMessage", meetingID=meetingID, message=message, userName=userName
+        )
 
 
 def build_parser():
@@ -572,7 +576,9 @@ def build_parser():
     )
 
     sign.add_argument("action")
-    sign.add_argument("parameters", nargs="*", help="Any number of KEY=VALUE parameters.")
+    sign.add_argument(
+        "parameters", nargs="*", help="Any number of KEY=VALUE parameters."
+    )
     sign.set_defaults(cmd=cmd_sign)
 
     return parser
